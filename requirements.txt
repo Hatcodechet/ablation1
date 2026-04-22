@@ -1,0 +1,6 @@
+ftfy
+regex
+Pillow
+tqdm
+scipy
+scikit-learn

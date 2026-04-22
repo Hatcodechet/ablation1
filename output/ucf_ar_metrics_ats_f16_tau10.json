@@ -1,0 +1,27 @@
+{
+  "sampling": {
+    "strategy": "ats_guided",
+    "select_frames": 16,
+    "ats_tau": 0.1,
+    "sample_fps": 2.0,
+    "max_frames": 256
+  },
+  "text_to_video": {
+    "num_queries": 290,
+    "top1": 0.21379310344827587,
+    "top5": 0.46551724137931033,
+    "top10": 0.6,
+    "mean_rank": 18.20689655172414,
+    "median_rank": 7,
+    "mrr": 0.3416740896431584
+  },
+  "video_to_text": {
+    "num_queries": 290,
+    "top1": 0.18620689655172415,
+    "top5": 0.4,
+    "top10": 0.5172413793103449,
+    "mean_rank": 24.02758620689655,
+    "median_rank": 9,
+    "mrr": 0.2982457003915228
+  }
+}
