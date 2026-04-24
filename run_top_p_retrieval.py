@@ -152,40 +152,61 @@ def encode_frames(
     return torch.cat(encoded_batches, dim=0)
 
 
-def build_snippet_features(frame_features: torch.Tensor, snippet_size: int) -> tuple[torch.Tensor, List[int]]:
-    if snippet_size <= 0:
-        raise ValueError("--snippet-size must be > 0.")
+def split_temporal_features(features: torch.Tensor, max_length: int) -> tuple[torch.Tensor, torch.Tensor]:
+    if features.ndim != 2:
+        raise ValueError(f"Expected a 2D feature tensor, got shape {tuple(features.shape)}.")
+    if max_length <= 0:
+        raise ValueError("max_length must be > 0.")
 
-    snippet_features = []
-    snippet_lengths = []
-    for start in range(0, frame_features.shape[0], snippet_size):
-        end = min(start + snippet_size, frame_features.shape[0])
-        snippet = frame_features[start:end]
-        snippet_features.append(snippet.mean(dim=0))
-        snippet_lengths.append(end - start)
-    return torch.stack(snippet_features, dim=0), snippet_lengths
+    total_length, feature_dim = features.shape
+    chunk_count = (total_length + max_length - 1) // max_length
+    padded = torch.zeros(
+        chunk_count,
+        max_length,
+        feature_dim,
+        device=features.device,
+        dtype=features.dtype,
+    )
+    lengths = torch.zeros(chunk_count, device=features.device, dtype=torch.long)
+
+    for chunk_index in range(chunk_count):
+        start = chunk_index * max_length
+        end = min(start + max_length, total_length)
+        chunk = features[start:end]
+        padded[chunk_index, : chunk.shape[0]] = chunk
+        lengths[chunk_index] = chunk.shape[0]
+
+    return padded, lengths
+
+
+def build_padding_mask(lengths: torch.Tensor, max_length: int) -> torch.Tensor:
+    if lengths.ndim != 1:
+        raise ValueError(f"Expected 1D lengths tensor, got shape {tuple(lengths.shape)}.")
+    positions = torch.arange(max_length, device=lengths.device).unsqueeze(0)
+    return positions >= lengths.unsqueeze(1)
 
 
 def compute_anomaly_scores(model: Any, frame_features: torch.Tensor, snippet_size: int = 16) -> torch.Tensor:
+    """Compute anomaly scores following VadCLIP test-time behavior.
+
+    The precomputed UCF CLIP features are already temporal-segment features, so to stay aligned
+    with `VadCLIP/src/ucf_test.py` we score them directly and only split them into chunks of
+    `model.visual_length`. The `snippet_size` argument is kept for CLI compatibility but is not
+    used in this code path.
+    """
     with torch.no_grad():
-        snippet_features, snippet_lengths = build_snippet_features(frame_features, snippet_size)
-        padded_features = torch.zeros(
-            model.visual_length,
-            snippet_features.shape[-1],
-            device=frame_features.device,
-            dtype=snippet_features.dtype,
-        )
-        padded_features[: snippet_features.shape[0]] = snippet_features
-        feature_batch = padded_features.unsqueeze(0)
-        lengths = torch.tensor([snippet_features.shape[0]], device=frame_features.device)
-        temporal_features = model.encode_video(feature_batch, None, lengths)
-        logits = model.classifier(temporal_features + model.mlp2(temporal_features)).squeeze(0).squeeze(-1)
-        logits = logits[: snippet_features.shape[0]]
-        snippet_scores = torch.sigmoid(logits)
-        return torch.repeat_interleave(
-            snippet_scores,
-            torch.tensor(snippet_lengths, device=frame_features.device, dtype=torch.long),
-        )
+        if frame_features.ndim != 2:
+            raise ValueError(f"Expected a 2D temporal feature tensor, got shape {tuple(frame_features.shape)}.")
+        if frame_features.shape[0] == 0:
+            raise ValueError("Received an empty temporal feature sequence.")
+
+        feature_batch, lengths = split_temporal_features(frame_features, model.visual_length)
+        padding_mask = build_padding_mask(lengths, model.visual_length)
+        temporal_features = model.encode_video(feature_batch, padding_mask, lengths)
+        logits = model.classifier(temporal_features + model.mlp2(temporal_features)).squeeze(-1)
+
+        valid_logits = [logits[chunk_index, :chunk_length] for chunk_index, chunk_length in enumerate(lengths.tolist())]
+        return torch.sigmoid(torch.cat(valid_logits, dim=0))
 
 
 def top_p_select_indices(

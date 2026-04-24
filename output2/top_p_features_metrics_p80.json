@@ -1,0 +1,29 @@
+{
+  "text_to_video": {
+    "num_queries": 290,
+    "top1": 0.23793103448275862,
+    "top5": 0.496551724137931,
+    "top10": 0.6103448275862069,
+    "mean_rank": 16.49655172413793,
+    "median_rank": 6.0,
+    "mrr": 0.3595880422402638
+  },
+  "video_to_text": {
+    "num_queries": 290,
+    "top1": 0.2,
+    "top5": 0.3931034482758621,
+    "top10": 0.5206896551724138,
+    "mean_rank": 24.920689655172414,
+    "median_rank": 10.0,
+    "mrr": 0.3062461156054239
+  },
+  "sampling": {
+    "strategy": "top_p_features",
+    "feature_root": "/workspace/VadCLIP/data/UCFClipFeatures",
+    "top_p": 0.8,
+    "snippet_size": 16,
+    "vadclip_style_segment_scoring": true,
+    "score_temperature": 1.0,
+    "min_selected_frames": 1
+  }
+}
