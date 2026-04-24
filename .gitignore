@@ -1,1 +1,7 @@
-*.pt
+clip_cache/
+__pycache__/
+*.pyc
+*.npy
+VadCLIP/data/model_ucf.pth
+output/*embedding_cache*.pt
+output4/*embedding_cache*.pt
