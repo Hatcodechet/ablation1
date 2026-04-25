@@ -20,6 +20,10 @@ All numbers below are taken directly from the corresponding `*metrics*.json` fil
 
 | Method | T2V Top1 | T2V Top5 | T2V Top10 | T2V Mean Rank | T2V MRR | V2T Top1 | V2T Top5 | V2T Top10 | V2T Mean Rank | V2T MRR |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| ATS `f=12, tau=0.01` | 22.76 | 51.03 | 62.76 | 16.01 | 0.3600 | 21.03 | 39.31 | 52.07 | 24.29 | 0.3150 |
+| ATS `f=12, tau=0.02` | 22.07 | 50.34 | 61.72 | 16.31 | 0.3549 | 20.34 | 39.31 | 53.10 | 24.36 | 0.3114 |
+| ATS `f=12, tau=0.03` | 22.76 | 50.00 | 62.07 | 16.05 | 0.3561 | 21.03 | 39.31 | 52.76 | 24.23 | 0.3141 |
+| ATS `f=12, tau=0.04` | 22.76 | 50.34 | 61.38 | 16.03 | 0.3575 | 20.69 | 39.66 | 52.76 | 24.22 | 0.3106 |
 | ATS `f=12, tau=0.10` | 23.10 | 49.66 | 61.03 | 15.89 | 0.3563 | 21.38 | 39.66 | 53.10 | 24.37 | 0.3147 |
 | ATS `f=12, tau=0.05` | 23.79 | 49.66 | 61.03 | 16.14 | 0.3603 | 21.38 | 40.00 | 52.76 | 24.48 | 0.3149 |
 | ATS `f=16, tau=0.10` | 22.76 | 49.31 | 61.38 | 15.96 | 0.3584 | 20.69 | 39.66 | 52.07 | 24.07 | 0.3135 |
@@ -27,7 +31,9 @@ All numbers below are taken directly from the corresponding `*metrics*.json` fil
 
 Notes:
 
-- Lowering `tau` from `0.10` to `0.05` improved T2V `Top1` and `MRR`.
+- Lowering `tau` from `0.10` to `0.05` improved ATS-only T2V `Top1` and `MRR`.
+- However, pushing `tau` further down to `0.04 -> 0.01` did not continue improving ATS-only `Top1`.
+- The best ATS-only T2V `Top1` among the current runs remains `f=12, tau=0.05`.
 - Increasing the frame budget from `12` to `20` slightly improved T2V `Top10`, but did not improve T2V `Top1`.
 
 ## 3. Hybrid ATS + Peak Ablations
