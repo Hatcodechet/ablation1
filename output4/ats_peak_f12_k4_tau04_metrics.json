@@ -1,0 +1,29 @@
+{
+  "text_to_video": {
+    "num_queries": 290,
+    "top1": 0.2517241379310345,
+    "top5": 0.5103448275862069,
+    "top10": 0.6172413793103448,
+    "mean_rank": 16.010344827586206,
+    "median_rank": 5.0,
+    "mrr": 0.371569007512404
+  },
+  "video_to_text": {
+    "num_queries": 290,
+    "top1": 0.21724137931034482,
+    "top5": 0.4,
+    "top10": 0.5310344827586206,
+    "mean_rank": 24.658620689655173,
+    "median_rank": 8.5,
+    "mrr": 0.3184585415917476
+  },
+  "sampling": {
+    "strategy": "ats_peak_features",
+    "feature_root": "/workspace/ablation1/VadCLIP/data/UCFClipFeatures",
+    "snippet_size": 16,
+    "vadclip_style_segment_scoring": true,
+    "select_frames": 12,
+    "peak_frames": 4,
+    "ats_tau": 0.04
+  }
+}
